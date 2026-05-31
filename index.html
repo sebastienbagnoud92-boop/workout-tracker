@@ -7,8 +7,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Workout"/>
 <meta name="theme-color" content="#07070f"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
 <title>Workout Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -137,7 +135,6 @@ input[type=number]{-moz-appearance:textfield}
 </div>
 
 <script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
 const WU_STD = { name:"ÉCHAUFFEMENT STANDARD", isWarmup:true, exercises:[
   {id:"wu_ob", name:"Over & Back (bâton/bande)",  ds:2, dr:12, dw:0, drest:30, hw:false},
   {id:"wu_ws", name:"Wall Slides",                ds:2, dr:10, dw:0, drest:30, hw:false},
@@ -246,24 +243,21 @@ const PROGRAM = {
 const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const SHORT = {Lundi:"LUN",Mardi:"MAR",Mercredi:"MER",Jeudi:"JEU",Vendredi:"VEN",Samedi:"SAM",Dimanche:"DIM"};
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
 function ls(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
-let sessions = ls("wt_sessions_v5", {});   // sessions[dayName] = [{date, exercises:{exId:{sets,reps,weight,rest}}}]
-let current  = ls("wt_current_v5",  {});   // current[dayName][exId] = {sets,reps,weight,rest}
-let doneMap  = ls("wt_done_v5",     {});   // doneMap[dayName_date][exId_si] = bool
+let sessions = ls("wt_sessions_v5", {});
+let current  = ls("wt_current_v5",  {});
+let doneMap  = ls("wt_done_v5",     {});
 
 let activeDay = DAYS[(new Date().getDay()+6)%7];
 let showHistory = false;
 
-// Timer state
 let timerInterval = null;
 let timerSeconds  = 0;
 let timerPaused   = false;
 let timerActive   = false;
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 function fmt(s){return`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`}
 function today(){return new Date().toISOString().split("T")[0]}
 function doneKey(){return`${activeDay}_${today()}`}
@@ -291,7 +285,6 @@ function setDone(exId, si, v){
   lsSet("wt_done_v5", doneMap);
 }
 
-// ─── TIMER ───────────────────────────────────────────────────────────────────
 function startTimer(sec, label){
   clearInterval(timerInterval);
   timerSeconds = parseInt(sec)||0;
@@ -330,7 +323,6 @@ function timerClose(){
   el.className="";
 }
 
-// ─── SAVE SESSION ─────────────────────────────────────────────────────────────
 function saveSession(){
   const day = PROGRAM[activeDay];
   const exMap = {};
@@ -345,7 +337,6 @@ function saveSession(){
   renderDay();
 }
 
-// ─── PROGRESS ────────────────────────────────────────────────────────────────
 function calcProgress(){
   const day = PROGRAM[activeDay];
   if(!day.sections.length) return {done:0,total:0};
@@ -374,7 +365,6 @@ function updateProgress(){
   } else { saveBtn.style.display="none"; }
 }
 
-// ─── RENDER TABS ─────────────────────────────────────────────────────────────
 function renderTabs(){
   const container = document.getElementById("tabs");
   container.innerHTML = "";
@@ -389,17 +379,14 @@ function renderTabs(){
   });
 }
 
-// ─── RENDER DAY ──────────────────────────────────────────────────────────────
 function renderDay(){
   const day = PROGRAM[activeDay];
   document.getElementById("day-title").textContent = `${activeDay} — ${day.label}`;
   document.getElementById("day-title").style.color = day.color;
   document.getElementById("day-sub").textContent   = day.sub;
-
   const content = document.getElementById("content");
   const restEl  = document.getElementById("rest-day");
   content.innerHTML = "";
-
   if(activeDay==="Dimanche"){
     content.style.display="none";
     restEl.style.display="block";
@@ -409,11 +396,9 @@ function renderDay(){
   }
   restEl.style.display="none";
   content.style.display="block";
-
   day.sections.forEach(sec=>{
     const secEl = document.createElement("div");
     secEl.style.marginBottom="22px";
-
     const title = document.createElement("div");
     title.className = "section-title" + (sec.highlight?" highlight":"");
     title.style.color = sec.highlight ? day.color : "#333";
@@ -425,17 +410,14 @@ function renderDay(){
     }
     title.appendChild(document.createTextNode(sec.name));
     secEl.appendChild(title);
-
     sec.exercises.forEach(ex=>{
       secEl.appendChild(renderExCard(ex, day.color, sec.isWarmup||false));
     });
     content.appendChild(secEl);
   });
-
   updateProgress();
 }
 
-// ─── RENDER EXERCISE CARD ─────────────────────────────────────────────────────
 function renderExCard(ex, color, isWarmup){
   const cfg = getCfg(activeDay, ex);
   const sets = parseInt(cfg.sets)||ex.ds;
@@ -444,26 +426,19 @@ function renderExCard(ex, color, isWarmup){
   card.id = "card_"+ex.id;
   card.style.background = "rgba(255,255,255,0.03)";
   if(isWarmup) card.style.borderColor="rgba(255,255,255,0.04)";
-
-  // Top
   const top = document.createElement("div");
   top.className="ex-top";
-
   const nameBlock = document.createElement("div");
   nameBlock.style.flex="1";nameBlock.style.marginRight="6px";
-
   const nameEl = document.createElement("div");
   nameEl.className="ex-name";
   nameEl.textContent=ex.name;
-
   const metaEl = document.createElement("div");
   metaEl.className="ex-meta";
   metaEl.id="meta_"+ex.id;
   updateMeta(metaEl, cfg, ex, color);
-
   nameBlock.appendChild(nameEl);
   nameBlock.appendChild(metaEl);
-
   const cfgBtn = document.createElement("button");
   cfgBtn.className="cfg-btn";
   cfgBtn.textContent="⚙";
@@ -472,34 +447,25 @@ function renderExCard(ex, color, isWarmup){
     panel.classList.toggle("open");
     cfgBtn.textContent = panel.classList.contains("open")?"▲":"⚙";
   };
-
   top.appendChild(nameBlock);
   top.appendChild(cfgBtn);
   card.appendChild(top);
-
-  // Config panel
   const panel = document.createElement("div");
   panel.className="cfg-panel";
   panel.id="cfg_"+ex.id;
-
   const fields = [
     {label:"Séries",    field:"sets",   val:cfg.sets,   min:1, max:10,  step:1},
     {label:`Reps${ex.ru?" ("+ex.ru+")":""}`, field:"reps", val:cfg.reps, min:1, max:300, step:1},
     ...(ex.hw ? [{label:"Poids (kg)", field:"weight", val:cfg.weight, min:0, max:300, step:0.5}] : []),
     {label:"Repos (s)", field:"rest",   val:cfg.rest,   min:0, max:600, step:5},
   ];
-  fields.forEach(f=>{
-    panel.appendChild(makeCfgField(f, ex, color));
-  });
+  fields.forEach(f=>{ panel.appendChild(makeCfgField(f, ex, color)); });
   card.appendChild(panel);
-
-  // Sets row
   const setsRow = document.createElement("div");
   setsRow.className="sets-row";
   setsRow.id="sets_"+ex.id;
   renderSets(setsRow, ex, sets, color);
   card.appendChild(setsRow);
-
   return card;
 }
 
@@ -522,7 +488,6 @@ function makeCfgField({label,field,val,min,max,step}, ex, color){
   lbl.textContent=label;
   const row=document.createElement("div");
   row.className="cfg-field-row";
-
   const minus=document.createElement("button");
   minus.className="cfg-adj";minus.textContent="−";
   const input=document.createElement("input");
@@ -530,16 +495,13 @@ function makeCfgField({label,field,val,min,max,step}, ex, color){
   input.value=val;input.min=min;input.max=max;input.step=step;
   const plus=document.createElement("button");
   plus.className="cfg-adj";plus.textContent="+";
-
   const update=(v)=>{
     const clamped=Math.min(max,Math.max(min,parseFloat(v)||0));
     input.value=clamped;
     setCfg(activeDay, ex.id, field, clamped);
-    // re-render meta
     const cfg2=getCfg(activeDay,ex);
     const metaEl=document.getElementById("meta_"+ex.id);
     if(metaEl) updateMeta(metaEl, cfg2, ex, color);
-    // re-render sets if sets changed
     if(field==="sets"){
       const setsRow=document.getElementById("sets_"+ex.id);
       if(setsRow) renderSets(setsRow, ex, parseInt(clamped)||ex.ds, color);
@@ -549,7 +511,6 @@ function makeCfgField({label,field,val,min,max,step}, ex, color){
   minus.onclick=()=>update(parseFloat(input.value)-step);
   plus.onclick= ()=>update(parseFloat(input.value)+step);
   input.onchange=()=>update(input.value);
-
   row.appendChild(minus);row.appendChild(input);row.appendChild(plus);
   wrap.appendChild(lbl);wrap.appendChild(row);
   return wrap;
@@ -589,7 +550,6 @@ function renderSets(container, ex, sets, color){
         const rest=parseInt(cfg.rest)||0;
         if(rest>0) startTimer(rest,name);
       }
-      // check all done for card opacity
       const cardSets=parseInt(getCfg(activeDay,{id:exId,ds:3}).sets)||3;
       let allD=true;
       for(let j=0;j<cardSets;j++) if(!isDone(exId,j)){allD=false;break;}
@@ -600,7 +560,6 @@ function renderSets(container, ex, sets, color){
     col.appendChild(lbl);col.appendChild(btn);
     container.appendChild(col);
   }
-  // Timer button
   const cfg=getCfg(activeDay,ex);
   const rest=parseInt(cfg.rest)||0;
   if(rest>0){
@@ -612,37 +571,29 @@ function renderSets(container, ex, sets, color){
   }
 }
 
-// ─── HISTORY ─────────────────────────────────────────────────────────────────
 function renderHistory(){
   const el = document.getElementById("history");
   el.innerHTML="";
-
-  // Build ex name map
   const exMap={};
   Object.values(PROGRAM).forEach(d=>d.sections.forEach(s=>s.exercises.forEach(e=>{exMap[e.id]=e;})));
-
   const hasSessions = Object.values(sessions).some(arr=>arr&&arr.length>0);
   if(!hasSessions){
     el.innerHTML='<div style="text-align:center;color:#333;padding-top:60px"><div style="font-size:30px;margin-bottom:10px">📊</div><div>Aucun historique encore.</div></div>';
     return;
   }
-
   const header=document.createElement("div");
   header.style.cssText="font-size:9px;color:#333;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px";
   header.textContent="HISTORIQUE PAR JOUR";
   el.appendChild(header);
-
   DAYS.forEach(dayName=>{
     const arr=sessions[dayName];
     if(!arr||!arr.length) return;
     const day=PROGRAM[dayName];
-
     const dayTitle=document.createElement("div");
     dayTitle.className="hist-day-title";
     dayTitle.style.color=day.color;
     dayTitle.textContent=`${dayName} — ${day.label}`;
     el.appendChild(dayTitle);
-
     [...arr].reverse().slice(0,5).forEach(session=>{
       const sEl=document.createElement("div");
       sEl.className="hist-session";
@@ -668,7 +619,6 @@ function renderHistory(){
   });
 }
 
-// ─── TOGGLE HISTORY ──────────────────────────────────────────────────────────
 function toggleHistory(){
   showHistory=!showHistory;
   document.getElementById("content").style.display   = showHistory?"none":"block";
@@ -681,7 +631,6 @@ function toggleHistory(){
   else renderDay();
 }
 
-// ─── RENDER ALL ───────────────────────────────────────────────────────────────
 function renderAll(){
   renderTabs();
   document.getElementById("history").style.display="none";
@@ -691,10 +640,6 @@ function renderAll(){
 }
 
 renderAll();
-
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js").catch(()=>{});
-}
 </script>
 </body>
 </html>
