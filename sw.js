@@ -1,14 +1,13 @@
 const CACHE = "workout-v1";
 const FILES = [
-  "./Workout.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
+  "./",
+  "./index.html",
+  "./manifest.json"
 ];
 
 self.addEventListener("install", e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(FILES.filter(f => !f.endsWith(".png"))))
+    caches.open(CACHE).then(c => c.addAll(FILES))
   );
   self.skipWaiting();
 });
