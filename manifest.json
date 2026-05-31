@@ -2,7 +2,7 @@
   "name": "Workout Tracker",
   "short_name": "Workout",
   "description": "Suivi d'entraînement fitness",
-  "start_url": "./Workout.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#07070f",
   "theme_color": "#07070f",
